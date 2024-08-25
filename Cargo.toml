@@ -2,7 +2,11 @@
 name = "scc-trait"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+authors = ["Timothée Haudebourg <author@haudebourg.net>"]
+categories = ["algorithms"]
+keywords = ["strongly", "connected", "components", "scc", "tarjan"]
+license = "MIT/Apache-2.0"
+description = "Trait-based Strongly Connected Components Calculation"
+documentation = "https://docs.rs/scc-trait"
+repository = "https://github.com/timothee-haudebourg/scc-trait"
+readme = "README.md"
