@@ -164,3 +164,27 @@ pub fn depths(predecessors: &[HashSet<usize>]) -> Vec<usize> {
 
 	depth
 }
+
+impl Scc for Vec<HashSet<usize>> {
+	type Vertex = usize;
+
+	fn vertices(&self) -> impl '_ + IntoIterator<Item = Self::Vertex> {
+		0..self.len()
+	}
+
+	fn successors(&self, v: Self::Vertex) -> impl '_ + IntoIterator<Item = Self::Vertex> {
+		self[v].iter().copied()
+	}
+}
+
+impl<T: Copy + Eq + Hash> Scc for HashMap<T, HashSet<T>> {
+	type Vertex = T;
+
+	fn vertices(&self) -> impl '_ + IntoIterator<Item = Self::Vertex> {
+		self.keys().copied()
+	}
+
+	fn successors(&self, v: Self::Vertex) -> impl '_ + IntoIterator<Item = Self::Vertex> {
+		self[&v].iter().copied()
+	}
+}
