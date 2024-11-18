@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use super::{Scc, Components};
+use super::{Components, Scc};
 
 // Solve dependencies using Tarjan's SCC algorithm.
 struct Data {
@@ -22,9 +22,9 @@ pub fn scc<G: ?Sized + Scc>(graph: &G) -> Components<G::Vertex> {
 	}
 
 	let vertex_to_component: HashMap<_, _> = map
-			.into_iter()
-			.map(|(v, data)| (v, data.component))
-			.collect();
+		.into_iter()
+		.map(|(v, data)| (v, data.component))
+		.collect();
 
 	let successors: Vec<HashSet<_>> = components
 		.iter()
@@ -32,7 +32,8 @@ pub fn scc<G: ?Sized + Scc>(graph: &G) -> Components<G::Vertex> {
 			component
 				.iter()
 				.flat_map(|v| {
-					graph.successors(*v)
+					graph
+						.successors(*v)
 						.into_iter()
 						.map(|sc| *vertex_to_component.get(&sc).unwrap())
 				})

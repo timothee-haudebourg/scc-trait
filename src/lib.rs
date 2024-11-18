@@ -66,7 +66,7 @@ impl<V> Components<V> {
 	/// Return the given vertex's strongly connected component.
 	pub fn get(&self, v: &V) -> Option<&[V]>
 	where
-		V: Eq + Hash
+		V: Eq + Hash,
 	{
 		self.get_by_index(self.vertex_component_index(v)?)
 	}
