@@ -1,3 +1,60 @@
+//! This crate provides the [`Scc`] trait that you can implement on any directed
+//! graph datatype to compute the Strongly Connected Components (SCC) in linear
+//! time, based on [Tarjan's SCC algorithm][1].
+//!
+//! [1]: <https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm>
+//!
+//! # Usage
+//!
+//! First, implement the `Scc` trait on your custom graph type, providing
+//! enough information about the graph structure:
+//! ```
+//! # type Vertex = usize;
+//! struct MyGraphType {
+//!   vertices: Vec<Vertex>,
+//!   edges: HashMap<Vertex, HashSet<Vertex>>
+//! }
+//!
+//! impl Scc for MyGraphType {
+//!   type Vertex = Vertex;
+//!
+//!   fn vertices(&self) -> impl '_ + IntoIterator<Item = Self::Vertex> {
+//!     self.vertices.iter().copied()
+//!   }
+//!
+//!   fn successors(&self, v: Self::Vertex) -> impl '_ + IntoIterator<Item = Self::Vertex> {
+//!     self.edges[&v].iter().copied()
+//!   }
+//! }
+//! ```
+//!
+//! This trait is also implemented for a few default types like
+//! `Vec<HashSet<usize>>` and `HashMap<T, HashSet<T>>`. It provides the
+//! [`strongly_connected_components`](Scc::strongly_connected_components) method
+//! returning the strongly connected [`Components`] of the graph. This type
+//! allows you to iterate through the components, get successors of a component,
+//! order the components by depth, etc.
+//!
+//! ```
+//! # let graph: Vec<HashSet<usize>> = Vec::new();
+//! use scc_trait::Scc;
+//!
+//! // Compute the strongly connected components.
+//! let components = graph.strongly_connected_components();
+//!
+//! // Print vertices grouped by component.
+//! for component in components {
+//!   for vertex in component {
+//!     println!("{vertex}");
+//!   }
+//! }
+//!
+//! // Order components by depth.
+//! for i in components.order_by_depth() {
+//!   let component = components.get_by_index(i).unwrap();
+//!   // ...
+//! }
+//! ```
 use std::{
 	collections::{HashMap, HashSet},
 	hash::Hash,
@@ -46,8 +103,8 @@ impl<V> Components<V> {
 	}
 
 	/// Returns an iterator over the strongly connected components.
-	pub fn iter(&self) -> impl Iterator<Item = &[V]> {
-		self.list.iter().map(Vec::as_slice)
+	pub fn iter(&self) -> Iter<V> {
+		Iter(self.list.iter())
 	}
 
 	/// Returns the index of the given vertex's strongly connected component.
@@ -140,6 +197,31 @@ impl<V> Components<V> {
 		let mut ordered_components: Vec<_> = (0..self.list.len()).collect();
 		ordered_components.sort_unstable_by_key(|i| depth[*i]);
 		ordered_components
+	}
+}
+
+pub struct Iter<'a, V>(std::slice::Iter<'a, Vec<V>>);
+
+impl<'a, V> Iterator for Iter<'a, V> {
+	type Item = &'a [V];
+
+	fn next(&mut self) -> Option<Self::Item> {
+		self.0.next().map(Vec::as_slice)
+	}
+}
+
+impl<'a, V> DoubleEndedIterator for Iter<'a, V> {
+	fn next_back(&mut self) -> Option<Self::Item> {
+		self.0.next_back().map(Vec::as_slice)
+	}
+}
+
+impl<'a, V> IntoIterator for &'a Components<V> {
+	type Item = &'a [V];
+	type IntoIter = Iter<'a, V>;
+
+	fn into_iter(self) -> Self::IntoIter {
+		self.iter()
 	}
 }
 
